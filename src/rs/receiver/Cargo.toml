@@ -11,6 +11,7 @@ web-sys = { version = "0.3.64", features = ["BinaryType", "Window", "WebSocket",
 js-sys = "0.3.64"
 serde = { version = "1.0.188", features = ["derive"] }
 serde-wasm-bindgen = "0.6.0"
+crc32fast = "1.3.2"
 
 [lib]
 crate-type = ["cdylib"]

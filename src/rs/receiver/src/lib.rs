@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use wasm_bindgen::prelude::*;
@@ -11,23 +12,23 @@ use serde::{Serialize, Deserialize};
 
 #[wasm_bindgen]
 pub struct Manager {
-    callbacks: Rc<RefCell<Vec<js_sys::Function>>>,
+    callbacks: Rc<RefCell<HashMap<u32, Vec<js_sys::Function>>>>,
 }
 
 #[wasm_bindgen]
 impl Manager {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Manager {
-        Manager { callbacks: Rc::new(RefCell::new(Vec::new())) }
+        Manager { callbacks: Rc::new(RefCell::new(HashMap::new())) }
     }
 
     pub fn add_callback(&mut self, callback: &js_sys::Function) {
-        self.callbacks.borrow_mut().push(callback.clone());
+        self.callbacks.borrow_mut().entry(crc32fast::hash(b"Float32Tensor")).and_modify(|v| { v.push(callback.clone())}).or_default();
     }
 
     pub fn notify_callbacks(&self, message: MessageData) {
         let callbacks = self.callbacks.borrow();
-        for callback in &*callbacks {
+        for callback in &*callbacks[&crc32fast::hash(b"Float32Tensor")] {
             let this = JsValue::NULL;
             let message_js = serde_wasm_bindgen::to_value(&message).unwrap();
             let _ = callback.call1(&this, &message_js);
@@ -80,15 +81,22 @@ pub fn start_websocket(manager: Manager, url: &str) -> Result<(), JsValue> {
             
             let bytes = Uint8Array::new(&data);
             
-            let mut header_bytes = [0u8; 12];
-            bytes.slice(0, 12).copy_to(&mut header_bytes);
+            let mut header_bytes = [0u8; 16];
+            bytes.slice(0, 16).copy_to(&mut header_bytes);
 
-            let a = u32::from_le_bytes([header_bytes[0], header_bytes[1], header_bytes[2], header_bytes[3]]) as usize;
-            let b = u32::from_le_bytes([header_bytes[4], header_bytes[5], header_bytes[6], header_bytes[7]]) as usize;
-            let c = u32::from_le_bytes([header_bytes[8], header_bytes[9], header_bytes[10], header_bytes[11]]) as usize;
+            let crc_id = u32::from_le_bytes([header_bytes[0], header_bytes[1], header_bytes[2], header_bytes[3]]);
+
+            web_sys::console::log_2(&"Received id".into(), &crc_id.to_string().into());
+
+            let blah = crc32fast::hash(b"Float32Tensor");
+            web_sys::console::log_2(&"Checking it matches".into(), &blah.to_string().into());
+
+            let a = u32::from_le_bytes([header_bytes[4], header_bytes[5], header_bytes[6], header_bytes[7]]) as usize;
+            let b = u32::from_le_bytes([header_bytes[8], header_bytes[9], header_bytes[10], header_bytes[11]]) as usize;
+            let c = u32::from_le_bytes([header_bytes[12], header_bytes[13], header_bytes[14], header_bytes[15]]) as usize;
 
             let mut body = vec![0u8; (a + b + c) as usize];
-            bytes.slice(12, 12 + (a + b + c) as u32).copy_to(&mut body);
+            bytes.slice(16, 16 + (a + b + c) as u32).copy_to(&mut body);
 
             let label = String::from_utf8_lossy(&body[0..a]).to_string();
 
@@ -109,7 +117,7 @@ pub fn start_websocket(manager: Manager, url: &str) -> Result<(), JsValue> {
 
             let message_data = MessageData::new(label, size, data);
 
-            for callback in &*callbacks.borrow() {
+            for callback in &*callbacks.borrow()[&crc_id] {
                 let this = JsValue::NULL;
                 let message_js = serde_wasm_bindgen::to_value(&message_data).unwrap();
                 let _ = callback.call1(&this, &message_js);
