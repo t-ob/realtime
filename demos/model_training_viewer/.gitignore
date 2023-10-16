@@ -1,5 +1,4 @@
 .venv/
-build_cpp/
-build_wasm/
+build_cpp
 data/
-src/py/realtime/
+src/py/realtime

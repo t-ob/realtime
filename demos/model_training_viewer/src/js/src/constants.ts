@@ -1,0 +1,1 @@
+export const RECEIVER_WEBSOCKET_URL = process.env.RECEIVER_WEBSOCKET_URL as string;

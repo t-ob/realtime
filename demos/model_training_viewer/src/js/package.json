@@ -11,10 +11,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/plotly.js": "^2.12.27",
+    "@types/plotly.js-dist-min": "^2.3.2",
     "@wasm-tool/wasm-pack-plugin": "^1.7.0",
+    "dotenv-webpack": "^8.0.1",
     "html-webpack-plugin": "^5.5.3",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.2.2",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "plotly.js": "^2.26.2",
+    "plotly.js-dist": "^2.26.2",
+    "plotly.js-dist-min": "^2.26.2"
   }
 }

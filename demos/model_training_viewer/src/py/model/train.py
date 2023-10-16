@@ -7,7 +7,7 @@ import realtime
 REALTIME_LOG = realtime.Float32TensorLogger("/tmp/example_socket")
 
 
-DATA_LOADER_BATCH_SIZE = 1 << 7
+DATA_LOADER_BATCH_SIZE = 1 << 6
 
 # Hyperparams
 

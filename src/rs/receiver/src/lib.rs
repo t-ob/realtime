@@ -36,12 +36,12 @@ impl Manager {
 }
 
 
-#[wasm_bindgen]
+#[wasm_bindgen(getter_with_clone)]
 #[derive(Serialize, Deserialize)]
 pub struct MessageData {
-    label: String,
-    size: Vec<u32>,
-    data: Vec<f32>,
+    pub label: String,
+    pub size: Vec<u32>,
+    pub data: Vec<f32>,
 }
 
 #[wasm_bindgen]
